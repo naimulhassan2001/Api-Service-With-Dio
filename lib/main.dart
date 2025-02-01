@@ -1,6 +1,10 @@
+
+
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'services/api_service.dart';
 
@@ -18,7 +22,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    apiCall();
     super.initState();
   }
 
@@ -26,12 +29,14 @@ class _MyAppState extends State<MyApp> {
     var body = {"name": "morpheus", "job": "leader"};
 
     var response =
-    await ApiService.postApi("https://reqres.in/api/users", body);
+        await ApiService.postApi("https://reqres.in/api/users", body);
 
     print(response.statusCode);
     print(response.body);
     print(response.message);
   }
+
+  String? image;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +44,56 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
       home: Scaffold(
-        body: Text("Api Service With Dio"),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (image != null)
+                Image.file(
+                  File(image!),
+                  height: 200,
+                  width: 200,
+                ),
+              TextButton(
+                  onPressed: () async {
+                    final ImagePicker picker = ImagePicker();
+
+                    final XFile? xFile =
+                        await picker.pickImage(source: ImageSource.gallery);
+
+                    if (xFile != null) {
+                      image = xFile.path;
+                      setState(() {});
+                    }
+                  },
+                  child: Text("Get Image")),
+              TextButton(
+                  onPressed: () async {
+                    if (image == null) {
+                      print("No image selected!");
+                      return;
+                    }
+
+                    FormData formData = FormData.fromMap({
+                      "file": await MultipartFile.fromFile(image!, filename: "naimul.png"),
+                      "name" : "naimul Hassan"
+                    });
+
+                    var headers = {"Content-Type": "multipart/form-data"};
+
+                    var response = await ApiService.postApi(
+                      "https://api.escuelajs.co/api/v1/files/upload",
+                      formData,
+                      header: headers,
+                    );
+
+                    print("Upload Response: ${response.message}");
+                  },
+                  child: Text("Upload")),
+            ],
+          ),
+        ),
       ),
     );
   }

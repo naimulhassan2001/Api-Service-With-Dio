@@ -36,8 +36,6 @@ class ApiService {
     return requestApi(url, "DELETE", body: body, header: header);
   }
 
-
-
   static Future<ApiResponseModel> requestApi(
     String url,
     String method, {
@@ -92,25 +90,38 @@ Dio getMyDio() {
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) {
       options.headers["Authorization"] = PrefsHelper.token;
-      options.headers["Content-Type"] = "application/json";
+      options.headers["Content-Type"] =
+          options.headers["Content-Type"] ?? "application/json";
       options.sendTimeout = const Duration(seconds: 30);
       options.receiveTimeout = const Duration(seconds: 30);
 
       if (kDebugMode) {
         stopwatch.start();
-        print("Api Service ==================>Requested method: ${options.method}");
+        print(
+            "Api Service ==================>Requested method: ${options.method}");
         print("Api Service==================>Requested URL: ${options.uri}");
-        print("Api Service==================>Request Headers: ${options.headers}");
-        print("Api Service==================>Request Body: ${jsonEncode(options.data)}");
+        print(
+            "Api Service==================>Request Headers: ${options.headers}");
+
+        if (options.headers["Content-Type"] == "application/json") {
+          print(
+              "Api Service==================>Request Body: ${jsonEncode(options.data)}");
+        } else if (options.headers["Content-Type"] == "multipart/form-data") {
+          print(
+              "Api Service==================>Request Body: ${options.data.fields}");
+        }
       }
       handler.next(options);
     },
     onResponse: (response, handler) {
       if (kDebugMode) {
         stopwatch.stop();
-        print("Api Service==================>Response Time: ${stopwatch.elapsedMilliseconds / 1000} Second");
-        print("Api Service==================>Response Status Code: ${response.statusCode}");
-        print("Api Service==================>Response Data: ${jsonEncode(response.data)}");
+        print(
+            "Api Service==================>Response Time: ${stopwatch.elapsedMilliseconds / 1000} Second");
+        print(
+            "Api Service==================>Response Status Code: ${response.statusCode}");
+        print(
+            "Api Service==================>Response Data: ${jsonEncode(response.data)}");
         stopwatch.reset();
       }
       handler.next(response);
@@ -118,9 +129,12 @@ Dio getMyDio() {
     onError: (error, handler) {
       if (kDebugMode) {
         stopwatch.stop();
-        print("Api Service==================>Response Time: ${stopwatch.elapsedMilliseconds / 1000} Second");
-        print("Api Service==================>Error Status Code: ${error.response?.statusCode}");
-        print("Api Service==================>Error Data: ${jsonEncode(error.response?.data)}");
+        print(
+            "Api Service==================>Response Time: ${stopwatch.elapsedMilliseconds / 1000} Second");
+        print(
+            "Api Service==================>Error Status Code: ${error.response?.statusCode}");
+        print(
+            "Api Service==================>Error Data: ${jsonEncode(error.response?.data)}");
         stopwatch.reset();
       }
       handler.next(error);
