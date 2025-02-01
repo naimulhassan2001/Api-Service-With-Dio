@@ -38,6 +38,40 @@ class _MyAppState extends State<MyApp> {
 
   String? image;
 
+  uploadImage() async {
+    if (image == null) {
+      print("No image selected!");
+      return;
+    }
+
+    FormData formData = FormData.fromMap({
+      "file": await MultipartFile.fromFile(image!, filename: "naimul.png"),
+      "name" : "naimul Hassan"
+    });
+
+    var headers = {"Content-Type": "multipart/form-data"};
+
+    var response = await ApiService.postApi(
+      "https://api.escuelajs.co/api/v1/files/upload",
+      formData,
+      header: headers,
+    );
+
+    print("Upload Response: ${response.message}");
+  }
+
+  pickImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    final XFile? xFile =
+    await picker.pickImage(source: ImageSource.gallery);
+
+    if (xFile != null) {
+      image = xFile.path;
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Run blockUI in a separate isolate
@@ -56,40 +90,10 @@ class _MyAppState extends State<MyApp> {
                   width: 200,
                 ),
               TextButton(
-                  onPressed: () async {
-                    final ImagePicker picker = ImagePicker();
-
-                    final XFile? xFile =
-                        await picker.pickImage(source: ImageSource.gallery);
-
-                    if (xFile != null) {
-                      image = xFile.path;
-                      setState(() {});
-                    }
-                  },
+                  onPressed: pickImage,
                   child: Text("Get Image")),
               TextButton(
-                  onPressed: () async {
-                    if (image == null) {
-                      print("No image selected!");
-                      return;
-                    }
-
-                    FormData formData = FormData.fromMap({
-                      "file": await MultipartFile.fromFile(image!, filename: "naimul.png"),
-                      "name" : "naimul Hassan"
-                    });
-
-                    var headers = {"Content-Type": "multipart/form-data"};
-
-                    var response = await ApiService.postApi(
-                      "https://api.escuelajs.co/api/v1/files/upload",
-                      formData,
-                      header: headers,
-                    );
-
-                    print("Upload Response: ${response.message}");
-                  },
+                  onPressed: uploadImage,
                   child: Text("Upload")),
             ],
           ),
